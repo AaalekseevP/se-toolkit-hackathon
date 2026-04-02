@@ -15,7 +15,7 @@ Each student builds their own project:
 Pen and paper quiz.
 - closed book, no devices allowed.
 - you get random 3 questions from the question bank.
-- answer at least 2 out of 3 correctly.
+- answer at least 2 out of 3.
 
 ## Task 2 (approved by TA during the lab).
 
