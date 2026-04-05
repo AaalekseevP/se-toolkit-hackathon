@@ -509,7 +509,7 @@ input[type="password"]:focus {
   .stats-row { grid-template-columns: repeat(3, 1fr); gap: 8px; }
   .stat-card { padding: 12px; }
   .stat-value { font-size: 20px; }
-  .heatmap { grid-template-columns: repeat(4, 1fr); }
+  .heatmap { grid-template-columns: repeat(3, 1fr); }
   .action-links { flex-wrap: wrap; }
 }
 
