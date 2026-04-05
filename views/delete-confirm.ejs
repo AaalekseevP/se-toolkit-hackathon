@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Delete Meeting</title>
+  <%- include('partials/theme-init') %>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme"></button>
+
+  <div class="header">
+    <h1>🗑️ Delete Meeting</h1>
+  </div>
+  <div class="container">
+    <div class="card" style="text-align:center;">
+      <h2>Delete "<%= meeting.title %>"?</h2>
+      <p style="color:var(--text-muted);margin:16px 0;">This action cannot be undone. All votes and comments will be removed.</p>
+      <form method="POST" action="/delete/<%= meeting.unique_id %>" style="display:flex;gap:10px;justify-content:center;margin-top:20px;">
+        <a href="/result/<%= meeting.unique_id %>" class="btn btn-outline" style="flex:1;">Cancel</a>
+        <button type="submit" class="delete-btn" style="flex:1;">Yes, delete</button>
+      </form>
+    </div>
+    <div style="text-align:center;margin-top:16px;">
+      <a href="/meetings" style="color:var(--primary);text-decoration:none;font-weight:600;">← Back to all meetings</a>
+    </div>
+  </div>
+
+  <script src="/theme.js"></script>
+</body>
+</html>

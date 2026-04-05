@@ -295,15 +295,7 @@
       <a href="/create" class="primary">＋ Create new meeting</a>
     </div>
     <div class="action-links">
-      <div id="deleteResult" style="flex:1;display:inline-flex;align-items:center;">
-        <button type="button" class="delete-btn" style="flex:1" onclick="document.getElementById('deleteResult').querySelector('.confirm-delete').style.display='flex';this.style.display='none';">🗑️ Delete meeting</button>
-        <div class="confirm-delete" style="display:none;align-items:center;gap:4px;width:100%;">
-          <form method="POST" action="/delete/<%= meeting.unique_id %>" style="display:inline;flex:1;">
-            <button type="submit" class="delete-btn" style="flex:1">Yes, delete</button>
-          </form>
-          <button type="button" class="delete-btn" style="flex:1;background:#999;border:none;" onclick="document.getElementById('deleteResult').querySelector('.confirm-delete').style.display='none';this.previousElementSibling.style.display='inline-block';">Cancel</button>
-        </div>
-      </div>
+      <a href="/delete/<%= meeting.unique_id %>" class="delete-btn" style="flex:1;text-align:center;text-decoration:none;display:block;">🗑️ Delete meeting</a>
     </div>
   </div>
 
