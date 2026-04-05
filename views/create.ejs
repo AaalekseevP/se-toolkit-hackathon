@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Create Meeting</title>
+  <%- include('partials/theme-init') %>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme"></button>
+
+  <div class="header">
+    <div class="author-badge">By Roman Alekseev<br>Innopolis University</div>
+    <h1>📝 New Meeting</h1>
+  </div>
+  <div class="container">
+    <div class="card">
+      <form method="POST" action="/create">
+        <label class="field-label" for="title">Meeting name:</label>
+        <input type="text" id="title" name="title" required placeholder="e.g. Team Standup">
+
+        <label class="field-label" for="date">Date:</label>
+        <input type="date" id="date" name="date" required min="" lang="en">
+
+        <label class="field-label" for="timezone">Timezone:</label>
+        <select id="timezone" name="timezone" required style="width:100%;padding:12px 14px;border:2px solid var(--border-input);border-radius:8px;font-size:16px;background:var(--bg-input);color:var(--text);"></select>
+
+        <label class="field-label" for="password">Password (optional):</label>
+        <input type="password" id="password" name="password" placeholder="Leave empty if not needed">
+
+        <button type="submit" class="submit-btn" style="margin-top:20px;">Create Meeting</button>
+      </form>
+    </div>
+    <a href="/" class="back-link">← Back to Home</a>
+  </div>
+
+  <script src="/theme.js"></script>
+  <script>
+    const today = new Date();
+    const yyyy = today.getFullYear();
+    const mm = String(today.getMonth() + 1).padStart(2, '0');
+    const dd = String(today.getDate()).padStart(2, '0');
+    document.getElementById('date').setAttribute('min', `${yyyy}-${mm}-${dd}`);
+
+    const timezones = [
+      { label: 'UTC+0 (London, Lisbon)', value: 'Europe/London' },
+      { label: 'UTC+1 (Berlin, Paris, Madrid)', value: 'Europe/Berlin' },
+      { label: 'UTC+2 (Kyiv, Helsinki, Cairo)', value: 'Europe/Kiev' },
+      { label: 'UTC+3 (Moscow, Istanbul, Riyadh)', value: 'Europe/Moscow' },
+      { label: 'UTC+4 (Dubai, Baku, Samara)', value: 'Europe/Samara' },
+      { label: 'UTC+5 (Yekaterinburg, Karachi)', value: 'Asia/Yekaterinburg' },
+      { label: 'UTC+6 (Omsk, Almaty, Dhaka)', value: 'Asia/Omsk' },
+      { label: 'UTC+7 (Krasnoyarsk, Bangkok, Jakarta)', value: 'Asia/Krasnoyarsk' },
+      { label: 'UTC+8 (Beijing, Shanghai, Singapore)', value: 'Asia/Shanghai' },
+      { label: 'UTC+9 (Novosibirsk, Tokyo, Seoul)', value: 'Asia/Novosibirsk' },
+      { label: 'UTC+10 (Vladivostok, Sydney)', value: 'Asia/Vladivostok' },
+      { label: 'UTC+11 (Magadan, Solomon Islands)', value: 'Asia/Magadan' },
+      { label: 'UTC+12 (Kamchatka, Auckland)', value: 'Asia/Kamchatka' },
+      { label: 'UTC−5 (New York, Toronto, Lima)', value: 'America/New_York' },
+      { label: 'UTC−6 (Chicago, Dallas, Mexico City)', value: 'America/Chicago' },
+      { label: 'UTC−7 (Denver, Phoenix)', value: 'America/Denver' },
+      { label: 'UTC−8 (Los Angeles, Vancouver)', value: 'America/Los_Angeles' },
+      { label: 'UTC+0 (UTC)', value: 'UTC' },
+    ];
+
+    timezones.sort((a, b) => {
+      const getOffset = tz => {
+        const match = tz.label.match(/UTC([−\+\d]+)/);
+        if (!match) return 999;
+        let num = match[1];
+        if (num.startsWith('−')) num = '-' + num.slice(1);
+        return parseFloat(num) || 0;
+      };
+      return getOffset(a) - getOffset(b);
+    });
+
+    const browserTz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    const select = document.getElementById('timezone');
+    timezones.forEach(tz => {
+      const opt = document.createElement('option');
+      opt.value = tz.value;
+      opt.textContent = tz.label;
+      if (tz.value === browserTz) opt.selected = true;
+      select.appendChild(opt);
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Meeting Scheduler</title>
+  <%- include('partials/theme-init') %>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme"></button>
+
+  <div class="header">
+    <div class="author-badge">By Roman Alekseev<br>Innopolis University</div>
+    <h1>📅 Meeting Scheduler</h1>
+    <p>Find the best time for your meeting in seconds</p>
+    <div class="nav">
+      <a href="/">Home</a>
+      <a href="/create">Create Meeting</a>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="actions-row">
+      <a href="/create" class="btn">＋ Create Meeting</a>
+      <a href="/meetings" class="btn btn-outline">All Meetings</a>
+    </div>
+
+    <% if (meetings.rows && meetings.rows.length > 0) { %>
+      <div class="card">
+        <h2>Recent Meetings</h2>
+        <% meetings.rows.slice(0, 5).forEach(function(m) { %>
+          <div class="meeting-item">
+            <div>
+              <div class="meeting-title">
+                <%= m.title %>
+                <% if (m.is_closed) { %>
+                  <span class="status-badge status-closed">Closed</span>
+                <% } else { %>
+                  <span class="status-badge status-open">Open</span>
+                <% } %>
+              </div>
+              <div class="meeting-date">
+                <%= m.dateDisplay || new Date(m.meeting_date).toLocaleDateString('en-US', { weekday: 'short', day: 'numeric', month: 'long' }) %>
+                <% if (m.voters_count > 0) { %> · 👤 <%= m.voters_count %><% } %>
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;">
+              <a href="/vote/<%= m.unique_id %>" class="meeting-link">Vote →</a>
+              <% if (!m.is_closed) { %>
+                <div id="closeIndex_<%= m.unique_id %>" style="display:inline-flex;align-items:center;gap:4px;">
+                  <button type="button" class="close-vote-mini" onclick="document.getElementById('closeIndex_<%= m.unique_id %>').querySelector('.confirm-close').style.display='inline-flex';this.style.display='none';" title="Close voting">🔒</button>
+                  <div class="confirm-close" style="display:none;align-items:center;gap:4px;">
+                    <form method="POST" action="/close-vote/<%= m.unique_id %>" style="display:inline;">
+                      <button type="submit" class="close-vote-mini" title="Confirm close">✓</button>
+                    </form>
+                    <button type="button" class="close-vote-mini" style="border-color:var(--border);color:var(--text-muted);" onclick="document.getElementById('closeIndex_<%= m.unique_id %>').querySelector('.confirm-close').style.display='none';this.previousElementSibling.style.display='inline-block';">✕</button>
+                  </div>
+                </div>
+              <% } %>
+            </div>
+          </div>
+        <% }); %>
+        <% if (meetings.rows.length > 5) { %>
+          <p style="text-align: center; margin-top: 15px;">
+            <a href="/meetings" style="color: var(--primary);">View all →</a>
+          </p>
+        <% } %>
+      </div>
+    <% } else { %>
+      <div class="empty">
+        <p>No meetings yet</p>
+        <p>Create your first one!</p>
+      </div>
+    <% } %>
+  </div>
+
+  <script src="/theme.js"></script>
+</body>
+</html>

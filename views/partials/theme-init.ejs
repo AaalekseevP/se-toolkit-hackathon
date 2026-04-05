@@ -1,0 +1,8 @@
+<script>
+  (function() {
+    var s = localStorage.getItem('theme');
+    var p = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    var t = s || (p ? 'dark' : 'light');
+    document.documentElement.setAttribute('data-theme', t);
+  })();
+</script>

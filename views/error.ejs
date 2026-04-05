@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Error</title>
+  <%- include('partials/theme-init') %>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme"></button>
+
+  <div class="error-header">
+    <div class="author-badge">By Roman Alekseev<br>Innopolis University</div>
+    <h1>❌ Error</h1>
+  </div>
+  <div class="container">
+    <div class="card">
+      <h2>Meeting not found</h2>
+      <p style="color:var(--text-secondary);margin:20px 0;"><%= message %></p>
+      <div class="error-actions">
+        <a href="/">Go Home</a>
+        <a href="/create">Create Meeting</a>
+      </div>
+    </div>
+  </div>
+
+  <script src="/theme.js"></script>
+</body>
+</html>

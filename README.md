@@ -1,170 +1,115 @@
-# Lab 9 - Quiz and Hackathon
+# Meeting Scheduler
 
-The lab opens with a quiz and then kicks off the hackathon.
+A web application for finding the best meeting time based on participant availability.
 
-To get the full point for the lab, you need to:
+## Demo
 
-- Pass Tasks 1, 2, 3 during the lab AND
-- Finish Tasks 4 and 5 by the usual deadline of Thursday 23:59.
+![Main Page](screenshots/main.png)
 
-Each student builds their own project:
+## Context
 
-- Go from an idea to a deployed product.
-- Use agents and LLMs throughout.
+**End users:** Student teams, work groups, friends
 
-----
+**Problem:** Hard to find a time when everyone is free. Endless messages like "does 3pm work?", "no, let's do 5pm"
 
-## Task 1 (graded by TA after the lab)
+**Solution:** Create a meeting → share the link → everyone marks their available slots → the app shows the best time
 
-Pen and paper quiz:
+## Features
 
-- 20 mins;
-- closed book, no devices;
-- you get 3 random questions from the question bank;
-- answer at least 2.
+### Implemented
+- ✅ Create meetings with name, date, and timezone
+- ✅ Generate unique voting links
+- ✅ Vote for available time slots (24 hours)
+- ✅ Automatic best time calculation
+- ✅ Results page with heatmap, stats, and detailed breakdown
+- ✅ Password-protected meetings
+- ✅ QR code generation for quick access (260×260, scannable)
+- ✅ Countdown timer until meeting
+- ✅ Copy results to clipboard / Export to CSV
+- ✅ Confetti animation when a clear winner emerges
+- ✅ Dark/light theme toggle (no flicker)
+- ✅ Docker deployment
+- ✅ **Close voting** — inline confirmation, blocks new votes
+- ✅ **Voting status badges** (Open / Closed) on all pages
+- ✅ **UTC offset display** on winning time and exports
+- ✅ **Timezone selector** with UTC offsets and popular cities (UTC+0 → UTC+12)
+- ✅ **Discussion** — threaded comments on result pages
+- ✅ **AI-powered summary** of voting results
 
-## Task 2 (approved by TA during the lab)
+### Not yet implemented
+- Email notifications / reminders
+- Meeting calendar view
+- Recurring meetings
 
-Ideate and plan your project.
+## Usage
 
-### Project idea
+### Local setup (requires PostgreSQL)
 
-The project idea must be:
+```bash
+npm install
+npm start
+```
 
-- something simple to build;
-- clearly useful;
-- easy to explain.
+Open http://localhost:3000
 
-Define and show to your TA:
+### Environment variables
 
-- End-user of the product
-- What problem your product solves for the end-user?
-- The product idea in one short sentence.
-- What is the product's core feature?
+| Variable | Description | Default |
+|----------|-------------|---------|
+| DB_HOST | Database host | localhost |
+| DB_PORT | Database port | 5432 |
+| DB_USER | Database user | postgres |
+| DB_PASSWORD | Database password | postgres |
+| DB_NAME | Database name | meeting_scheduler |
+| PORT | Application port | 3000 |
 
-### Implementation plan
+## Deployment
 
-When the idea is approved, produce a plan for two product versions.
+### Docker (recommended)
 
-Version 1 does one core thing well:
+```bash
+docker-compose up -d
+```
 
-- Pick the one feature most valuable to the end-user and relatively easy to implement;
-- It is a functioning product, not a prototype;
-- Must be shown to the TA upon completion for feedback.
+The app will be available at http://localhost:3000
 
-Version 2 builds upon Version 1:
+### Ubuntu 24.04 VM
 
-- Improves the initial feature or adds another one on top;
-- Address TA feedback from the lab;
-- Deploy and make it available for use.
+```bash
+# Install Docker
+curl -fsSL https://get.docker.com | sh
 
-The product must have the following components, each fulfilling a useful function:
+# Start the app
+docker-compose up -d
+```
 
-- backend;
-- database;
-- end-user-facing client: web app, mobile app, or LLM-powered agent, e.g. `nanobot`.
+## Project structure
 
-Note:
+```
+├── server.js              # Express server + all routes
+├── db.js                  # PostgreSQL connection
+├── views/                 # EJS templates
+│   ├── index.ejs          # Home page
+│   ├── create.ejs         # Create meeting form
+│   ├── vote.ejs           # Voting page
+│   ├── result.ejs         # Results page
+│   ├── meetings.ejs       # All meetings list
+│   ├── password.ejs       # Password prompt
+│   ├── error.ejs          # Error page
+│   └── partials/
+│       └── theme-init.ejs # Flicker-free dark mode
+├── public/
+│   ├── styles.css          # Global styles (dark/light theme)
+│   └── theme.js            # Theme toggle logic
+├── Dockerfile
+├── docker-compose.yml
+└── package.json
+```
 
-- You can use the setup from Lab 8 or start from scratch.
-- `Telegram` bots are blocked on university VMs.
+## License
 
-## Task 3 (approved by TA during the lab)
+MIT
 
-Implement Version 1 outlined in the plan:
+---
 
-- Build one core feature;
-- Follow best practices and git workflow;
-- Test it yourself and fix bugs;
-- Have the TA try it as a user;
-- Take note of the TA feedback;
-- Get TA's approval for the task to be marked as DONE.
-
-## Task 4
-
-Implement and deploy Version 2 outlined in the plan:
-
-- Build and polish functionality;
-- Take TA feedback into account;
-- Push all code to the GitHub repo (see the detailed instructions below);
-- Follow best practices and git workflow;
-- Document your solution;
-- Dockerize all services;
-- Deploy it to be accessible to use.
-
-Version 2 can be completed during the lab or after it, before the usual deadline.
-
-## Task 5 (demo and PDF submitted through Moodle)
-
-Submit a presentation with five slides:
-
-1. Title:
-
-   - Product title
-   - Your name
-   - Your university email
-   - Your group
-
-2. Context:
-
-   - End-user of the product
-   - What problem your product solves
-   - The product idea in one short sentence
-
-3. Implementation:
-
-   - How you built the product
-   - What went into Version 1 and Version 2
-   - What TA feedback points you addressed
-
-4. Demo:
-
-   - Pre-recorded video demonstration of Version 2 with voice-over (no longer than 2 minutes).
-   - _Note:_ **This is the most important part of the presentation**.
-
-5. Links:
-
-   - Link and QR code for each of these:
-     - The GitHub repo with the product code
-     - Deployed product (latest version)
-
-----
-
-## Publishing the product code on GitHub
-
-- Publish the product code in a repository on `GitHub`.
-
-  The repository must be called `se-toolkit-hackathon`.
-
-- Add the MIT license file to make your product open-source.
-
-- Add `README.md` in the product repository.
-
-  `README.md` structure:
-
-  - Product name (as title)
-
-  - One-line description
-
-  - Demo:
-    - A couple of relevant screenshots of the product
-
-  - Product context:
-
-    - End users
-    - Problem that your product solves for end users
-    - Your solution
-
-  - Features:
-
-    - Implemented and not yet implemented features
-
-  - Usage:
-
-    - Explain how to use your product
-
-  - Deployment:
-
-    - Which OS the VM should run on (you may assume `Ubuntu 24.04` like on your university VMs)
-    - What should be installed on the VM
-    - Step-by-step deployment instructions
+By Roman Alekseev, Innopolis University

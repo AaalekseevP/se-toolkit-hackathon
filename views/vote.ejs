@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vote — <%= meeting.title %></title>
+  <%- include('partials/theme-init') %>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme"></button>
+
+  <div class="header">
+    <div class="author-badge">By Roman Alekseev<br>Innopolis University</div>
+    <h1 class="meeting-title-h1"><%= meeting.title %></h1>
+    <p class="subtitle">🗳️ Vote · <%= meeting.dateDisplay %></p>
+    <div class="nav">
+      <a href="/">Home</a>
+      <a href="/create">Create</a>
+      <a href="/result/<%= uniqueId %>">Results</a>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="card">
+      <h2>🔗 Share with participants</h2>
+      <div class="share-box">
+        <input type="text" id="shareLink" value="<%= shareUrl %>" readonly>
+        <button class="copy-btn" onclick="copyLink()">Copy</button>
+      </div>
+      <div style="text-align:center;margin-top:16px;">
+        <img src="<%= qrCode %>" alt="QR Code" style="display:inline-block;width:260px;height:260px;border-radius:12px;box-shadow:var(--shadow);">
+        <p style="font-size:12px;color:var(--text-muted);margin-top:8px;">Scan for quick access</p>
+      </div>
+      <% if (meeting.is_closed) { %>
+        <div class="closed-notice">
+          🔒 Voting is closed. No more votes are being accepted.
+        </div>
+      <% } else { %>
+        <div id="closeVoteSection" style="margin-top:16px;text-align:center;">
+          <button type="button" class="close-vote-btn" onclick="document.getElementById('closeVoteSection').querySelector('.confirm-close').style.display='block';this.style.display='none';">🔒 Close Voting</button>
+          <div class="confirm-close" style="display:none;margin-top:12px;padding:16px;background:rgba(244,67,54,0.08);border-radius:10px;border:1px solid rgba(244,67,54,0.2);">
+            <p style="font-size:14px;font-weight:600;color:#f44336;margin:0 0 12px;">Are you sure? This action cannot be undone.</p>
+            <form method="POST" action="/close-vote/<%= uniqueId %>" style="display:inline;">
+              <button type="submit" class="close-vote-btn" style="margin-right:8px;">Yes, close voting</button>
+            </form>
+            <button type="button" class="close-vote-btn" style="background:var(--border);color:var(--text);border:none;" onclick="document.getElementById('closeVoteSection').querySelector('.confirm-close').style.display='none';this.previousElementSibling.style.display='inline-block';">Cancel</button>
+          </div>
+        </div>
+      <% } %>
+    </div>
+
+    <% if (!meeting.is_closed) { %>
+    <div class="card">
+      <h2>Cast your vote</h2>
+      <form method="POST" action="/vote/<%= uniqueId %>" id="voteForm">
+        <label class="field-label" for="voterName">Your name</label>
+        <input type="text" class="name-input" id="voterName" name="voterName" required placeholder="What's your name?">
+
+        <div class="time-section">
+          <label>Select your available times</label>
+
+          <div class="period-label">
+            🌙 Night (00–05)
+            <button type="button" onclick="toggleGroup(this, '0-5')" style="background:none;border:1px solid var(--border);border-radius:4px;padding:2px 8px;font-size:11px;cursor:pointer;color:var(--text-muted);margin-left:8px;">Select All</button>
+          </div>
+          <div class="time-grid six-cols" data-group="0-5">
+            <% for (let h = 0; h < 6; h++) { %>
+              <label class="time-slot">
+                <input type="checkbox" name="slots" value="<%= h %>" onchange="updateCount()">
+                <span class="time-label"><%= String(h).padStart(2, '0') %>:00</span>
+              </label>
+            <% } %>
+          </div>
+
+          <div class="period-label">
+            🌅 Morning (06–11)
+            <button type="button" onclick="toggleGroup(this, '6-11')" style="background:none;border:1px solid var(--border);border-radius:4px;padding:2px 8px;font-size:11px;cursor:pointer;color:var(--text-muted);margin-left:8px;">Select All</button>
+          </div>
+          <div class="time-grid six-cols" data-group="6-11">
+            <% for (let h = 6; h < 12; h++) { %>
+              <label class="time-slot">
+                <input type="checkbox" name="slots" value="<%= h %>" onchange="updateCount()">
+                <span class="time-label"><%= String(h).padStart(2, '0') %>:00</span>
+              </label>
+            <% } %>
+          </div>
+
+          <div class="period-label">
+            ☀️ Afternoon (12–17)
+            <button type="button" onclick="toggleGroup(this, '12-17')" style="background:none;border:1px solid var(--border);border-radius:4px;padding:2px 8px;font-size:11px;cursor:pointer;color:var(--text-muted);margin-left:8px;">Select All</button>
+          </div>
+          <div class="time-grid six-cols" data-group="12-17">
+            <% for (let h = 12; h < 18; h++) { %>
+              <label class="time-slot">
+                <input type="checkbox" name="slots" value="<%= h %>" onchange="updateCount()">
+                <span class="time-label"><%= String(h).padStart(2, '0') %>:00</span>
+              </label>
+            <% } %>
+          </div>
+
+          <div class="period-label">
+            🌆 Evening (18–23)
+            <button type="button" onclick="toggleGroup(this, '18-23')" style="background:none;border:1px solid var(--border);border-radius:4px;padding:2px 8px;font-size:11px;cursor:pointer;color:var(--text-muted);margin-left:8px;">Select All</button>
+          </div>
+          <div class="time-grid six-cols" data-group="18-23">
+            <% for (let h = 18; h < 24; h++) { %>
+              <label class="time-slot">
+                <input type="checkbox" name="slots" value="<%= h %>" onchange="updateCount()">
+                <span class="time-label"><%= String(h).padStart(2, '0') %>:00</span>
+              </label>
+            <% } %>
+          </div>
+        </div>
+
+        <div class="selected-count" id="selectedCount"></div>
+        <button type="submit" class="submit-btn">✓ Submit Vote</button>
+      </form>
+    </div>
+    <% } else { %>
+    <div class="card">
+      <div class="closed-notice" style="text-align:center;padding:30px;">
+        <h2>🔒 Voting Closed</h2>
+        <p style="color:var(--text-muted);margin-top:8px;">Voting for this meeting is no longer accepting votes.</p>
+        <a href="/result/<%= uniqueId %>" class="btn" style="margin-top:16px;display:inline-block;">View Results →</a>
+      </div>
+    </div>
+    <% } %>
+
+    <div class="action-links">
+      <a href="/">← Home</a>
+      <a href="/result/<%= uniqueId %>" class="primary">Results →</a>
+    </div>
+  </div>
+
+  <script src="/theme.js"></script>
+  <script>
+    function copyLink() {
+      const input = document.getElementById('shareLink');
+      input.select();
+      navigator.clipboard.writeText(input.value);
+      showToast('Link copied!');
+    }
+
+    function updateCount() {
+      const count = document.querySelectorAll('input[name="slots"]:checked').length;
+      const el = document.getElementById('selectedCount');
+      if (count === 0) {
+        el.textContent = '';
+      } else {
+        el.textContent = 'Selected: ' + count + ' slot' + (count === 1 ? '' : 's');
+      }
+    }
+
+    function toggleGroup(btn, group) {
+      const container = btn.closest('.time-section');
+      const grid = container.querySelector('[data-group="' + group + '"]');
+      const checkboxes = grid.querySelectorAll('input[type="checkbox"]');
+      const allChecked = Array.from(checkboxes).every(function(cb) { return cb.checked; });
+
+      checkboxes.forEach(function(cb) { cb.checked = !allChecked; });
+      updateCount();
+      btn.textContent = allChecked ? 'Select All' : 'Clear All';
+    }
+  </script>
+</body>
+</html>

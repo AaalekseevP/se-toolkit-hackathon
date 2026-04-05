@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>All Meetings</title>
+  <%- include('partials/theme-init') %>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme"></button>
+
+  <div class="header">
+    <div class="author-badge">By Roman Alekseev<br>Innopolis University</div>
+    <h1>📅 All Meetings</h1>
+    <div class="nav">
+      <a href="/">Home</a>
+      <a href="/create">Create Meeting</a>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="create-btn">
+      <a href="/create">＋ Create a new meeting</a>
+    </div>
+
+    <% if (meetings.rows && meetings.rows.length > 0) { %>
+      <div class="card">
+        <% meetings.rows.forEach(function(m) { %>
+          <div class="meeting-item">
+            <div>
+              <div class="meeting-title">
+                <%= m.title %>
+                <% if (m.is_closed) { %>
+                  <span class="status-badge status-closed">Closed</span>
+                <% } else { %>
+                  <span class="status-badge status-open">Open</span>
+                <% } %>
+              </div>
+              <div class="meeting-date">
+                <%= m.dateDisplay %>
+                <% if (m.voters_count > 0) { %> · 👤 <%= m.voters_count %><% } %>
+              </div>
+            </div>
+            <div class="meeting-actions">
+              <a href="/vote/<%= m.unique_id %>" class="vote-link">Vote</a>
+              <a href="/result/<%= m.unique_id %>" class="result-link">Results</a>
+              <% if (!m.is_closed) { %>
+                <div id="closeMeet_<%= m.unique_id %>" style="display:inline-flex;align-items:center;gap:4px;">
+                  <button type="button" class="close-vote-mini" onclick="document.getElementById('closeMeet_<%= m.unique_id %>').querySelector('.confirm-close').style.display='inline-flex';this.style.display='none';" title="Close voting">🔒 Close</button>
+                  <div class="confirm-close" style="display:none;align-items:center;gap:4px;">
+                    <form method="POST" action="/close-vote/<%= m.unique_id %>" style="display:inline;">
+                      <button type="submit" class="close-vote-mini">✓ Close</button>
+                    </form>
+                    <button type="button" class="close-vote-mini" style="border-color:var(--border);color:var(--text-muted);" onclick="document.getElementById('closeMeet_<%= m.unique_id %>').querySelector('.confirm-close').style.display='none';this.previousElementSibling.style.display='inline-block';">✕</button>
+                  </div>
+                </div>
+              <% } %>
+              <form method="POST" action="/delete/<%= m.unique_id %>" style="display:inline" onsubmit="return confirm('Delete this meeting?')">
+                <button type="submit" style="background:none;border:none;color:#f44336;cursor:pointer;font-size:18px;" title="Delete">🗑️</button>
+              </form>
+            </div>
+          </div>
+        <% }); %>
+      </div>
+    <% } else { %>
+      <div class="empty">
+        <p>No meetings yet</p>
+        <p>Create your first one!</p>
+      </div>
+    <% } %>
+
+    <a href="/" class="back-link">← Back to Home</a>
+  </div>
+
+  <script src="/theme.js"></script>
+</body>
+</html>

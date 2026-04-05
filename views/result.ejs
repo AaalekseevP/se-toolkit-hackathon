@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Results — <%= meeting.title %></title>
+  <%- include('partials/theme-init') %>
+  <link rel="stylesheet" href="/styles.css">
+  <style>
+    .countdown-box { text-align: center; padding: 20px; background: var(--bg-card); border-radius: 12px; box-shadow: var(--shadow); margin: 16px 0; }
+    .countdown-label { font-size: 13px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+    .countdown-value { font-size: 32px; font-weight: bold; color: var(--primary); margin-top: 8px; }
+    .stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 16px 0; }
+    .stat-card { background: var(--bg-card); border-radius: 10px; padding: 16px; text-align: center; box-shadow: var(--shadow); }
+    .stat-value { font-size: 28px; font-weight: bold; color: var(--primary); }
+    .stat-label { font-size: 12px; color: var(--text-muted); margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .heatmap { display: grid; grid-template-columns: repeat(6, 1fr); gap: 4px; margin: 16px 0; }
+    .heatmap-cell { aspect-ratio: 1; border-radius: 6px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; cursor: default; transition: transform 0.15s; position: relative; }
+    .heatmap-cell:hover { transform: scale(1.1); z-index: 1; }
+    .heatmap-cell .hm-time { font-size: 12px; }
+    .heatmap-cell .hm-count { font-size: 10px; opacity: 0.9; }
+    .hm-0 { background: var(--border); color: var(--text-muted); }
+    .hm-1 { background: rgba(76,175,80,0.2); color: var(--text); }
+    .hm-2 { background: rgba(76,175,80,0.4); color: var(--text); }
+    .hm-3 { background: rgba(76,175,80,0.6); color: white; }
+    .hm-4 { background: rgba(76,175,80,0.8); color: white; }
+    .hm-5 { background: var(--primary); color: white; }
+    .copy-results-btn { background: var(--bg-card); border: 2px solid var(--primary); color: var(--primary); border-radius: 8px; padding: 10px 18px; cursor: pointer; font-size: 14px; font-weight: 600; transition: all 0.2s; width: 100%; margin-top: 12px; }
+    .copy-results-btn:hover { background: var(--primary); color: white; }
+    .best-time-badge { animation: pulse 2s infinite; }
+    @keyframes pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(76,175,80,0.4); } 50% { box-shadow: 0 0 0 15px rgba(76,175,80,0); } }
+    @keyframes confetti-fall { 0% { transform: translateY(-100vh) rotate(0deg); opacity: 1; } 100% { transform: translateY(100vh) rotate(720deg); opacity: 0; } }
+    .confetti { position: fixed; top: 0; width: 10px; height: 10px; z-index: 9999; pointer-events: none; animation: confetti-fall 3s ease-in forwards; }
+    .period-label-hm { font-weight: 600; color: var(--text-muted); font-size: 12px; text-transform: uppercase; margin: 12px 0 6px; letter-spacing: 0.5px; }
+    .heatmap-legend { display: flex; align-items: center; gap: 6px; justify-content: center; margin-top: 8px; font-size: 11px; color: var(--text-muted); }
+    .heatmap-legend-cell { width: 20px; height: 20px; border-radius: 4px; }
+    .csv-btn { background: var(--bg-card); border: 2px solid #2196F3; color: #2196F3; border-radius: 8px; padding: 10px 18px; cursor: pointer; font-size: 14px; font-weight: 600; transition: all 0.2s; width: 100%; margin-top: 8px; }
+    .csv-btn:hover { background: #2196F3; color: white; }
+    @media (max-width: 500px) {
+      .stats-row { grid-template-columns: repeat(3, 1fr); }
+      .heatmap { grid-template-columns: repeat(4, 1fr); }
+      .stat-value { font-size: 22px; }
+    }
+    @keyframes skeleton-loading { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+    .skeleton { background: linear-gradient(90deg, var(--border) 25%, var(--bg-input) 50%, var(--border) 75%); background-size: 200% 100%; animation: skeleton-loading 1.5s infinite; border-radius: 8px; min-height: 60px; }
+  </style>
+</head>
+<body>
+  <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme"></button>
+
+  <div class="header">
+    <div class="author-badge">By Roman Alekseev<br>Innopolis University</div>
+    <h1 class="meeting-title-h1"><%= meeting.title %></h1>
+    <p class="subtitle">📊 Results · <%= meeting.dateDisplay %> (<%= meeting.timezone %>)</p>
+    <div class="nav">
+      <a href="/">Home</a>
+      <a href="/create">Create</a>
+      <a href="/vote/<%= meeting.unique_id %>">Vote</a>
+    </div>
+  </div>
+
+  <div class="container">
+    <!-- Countdown -->
+    <div class="countdown-box" id="countdown">
+      <div class="countdown-label">Time until meeting</div>
+      <div class="countdown-value" id="countdown-value">Calculating...</div>
+    </div>
+
+    <!-- Voting status -->
+    <div class="card" style="padding:16px 24px;display:flex;justify-content:space-between;align-items:center;">
+      <div>
+        <strong>Voting status: </strong>
+        <% if (meeting.is_closed) { %>
+          <span class="status-badge status-closed">Closed</span>
+        <% } else { %>
+          <span class="status-badge status-open">Open</span>
+        <% } %>
+      </div>
+      <% if (!meeting.is_closed) { %>
+        <div id="closeVoteResult" style="display:flex;align-items:center;gap:8px;">
+          <button type="button" class="close-vote-btn" onclick="document.getElementById('closeVoteResult').querySelector('.confirm-close').style.display='flex';this.style.display='none';">🔒 Close Voting</button>
+          <div class="confirm-close" style="display:none;align-items:center;gap:8px;">
+            <form method="POST" action="/close-vote/<%= meeting.unique_id %>" style="display:inline;">
+              <button type="submit" class="close-vote-btn">Yes, close</button>
+            </form>
+            <button type="button" class="close-vote-btn" style="background:var(--border);color:var(--text);border:none;" onclick="document.getElementById('closeVoteResult').querySelector('.confirm-close').style.display='none';this.previousElementSibling.style.display='inline-block';">Cancel</button>
+          </div>
+        </div>
+      <% } %>
+    </div>
+
+    <script>
+      (function() {
+        var target = <%= meeting.countdownTarget %>;
+        var label = document.querySelector('.countdown-label');
+        var value = document.getElementById('countdown-value');
+        function update() {
+          var now = Date.now();
+          var diff = target - now;
+          if (diff <= 0) { label.style.display = 'none'; value.textContent = 'Meeting has started! 🎉'; value.style.color = '#f44336'; return; }
+          var days = Math.floor(diff / (1000 * 60 * 60 * 24));
+          var hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+          var minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+          if (days > 0) value.textContent = days + ' day' + (days === 1 ? '' : 's') + ' ' + hours + ' hour' + (hours === 1 ? '' : 's');
+          else if (hours > 0) value.textContent = hours + ' hour' + (hours === 1 ? '' : 's') + ' ' + minutes + ' min';
+          else { value.textContent = minutes + ' min'; value.style.color = '#f44336'; }
+        }
+        update();
+        setInterval(update, 60000);
+      })();
+    </script>
+
+    <% if (bestSlot) { %>
+      <!-- Best time -->
+      <div class="card best-time-badge">
+        <div class="best-time">
+          <h3>🏆 <%= bestSlot.time_slot %>:00 <span style="font-size:18px;opacity:0.8;">(<%= meeting.timezone %>, UTC<%= tzOffset(meeting.timezone) %>)</span></h3>
+          <p>Best time — <%= bestSlot.vote_count %> vote(s)</p>
+          <p>Participants: <%= totalVoters %></p>
+        </div>
+      </div>
+
+      <!-- AI Summary -->
+      <div class="card" style="border-left: 4px solid var(--primary);">
+        <h2>🤖 AI Summary</h2>
+        <div id="ai-summary">
+          <div class="skeleton" style="min-height: 80px;"></div>
+        </div>
+      </div>
+      <script>
+        (function() {
+          var raw = `<%- meeting.aiSummary.replace(/` + '`' + `/g, '\\`').replace(/\n/g, '\\n') %>`;
+          setTimeout(function() {
+            var html = raw
+              .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+              .replace(/\n\n/g, '<br><br>')
+              .replace(/\n/g, '<br>');
+            document.getElementById('ai-summary').innerHTML = html;
+          }, 400);
+        })();
+      </script>
+
+      <!-- Stats -->
+      <div class="stats-row">
+        <div class="stat-card">
+          <div class="stat-value"><%= totalVoters %></div>
+          <div class="stat-label">Participants</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value"><%= totalVotes %></div>
+          <div class="stat-label">Votes</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value"><%= votes.length %></div>
+          <div class="stat-label">Slots</div>
+        </div>
+      </div>
+
+      <!-- Heatmap -->
+      <div class="card">
+        <h2>🗺️ Heatmap</h2>
+
+        <div class="period-label-hm">🌙 Night (00–05)</div>
+        <div class="heatmap">
+          <% for (var h = 0; h < 6; h++) { %>
+            <% var vote = votes.find(function(v) { return parseInt(v.time_slot) === h; }); %>
+            <% var count = vote ? parseInt(vote.vote_count) : 0; %>
+            <% var level = count === 0 ? 0 : count <= 1 ? 1 : count <= 2 ? 2 : count <= 3 ? 3 : count <= 4 ? 4 : 5; %>
+            <div class="heatmap-cell hm-<%= level %>" title="<%= h %>:00 — <%= count %> vote(s)">
+              <span class="hm-time"><%= String(h).padStart(2, '0') %>:00</span>
+              <span class="hm-count"><%= count %></span>
+            </div>
+          <% } %>
+        </div>
+
+        <div class="period-label-hm">🌅 Morning (06–11)</div>
+        <div class="heatmap">
+          <% for (var h = 6; h < 12; h++) { %>
+            <% var vote = votes.find(function(v) { return parseInt(v.time_slot) === h; }); %>
+            <% var count = vote ? parseInt(vote.vote_count) : 0; %>
+            <% var level = count === 0 ? 0 : count <= 1 ? 1 : count <= 2 ? 2 : count <= 3 ? 3 : count <= 4 ? 4 : 5; %>
+            <div class="heatmap-cell hm-<%= level %>" title="<%= h %>:00 — <%= count %> vote(s)">
+              <span class="hm-time"><%= String(h).padStart(2, '0') %>:00</span>
+              <span class="hm-count"><%= count %></span>
+            </div>
+          <% } %>
+        </div>
+
+        <div class="period-label-hm">☀️ Afternoon (12–17)</div>
+        <div class="heatmap">
+          <% for (var h = 12; h < 18; h++) { %>
+            <% var vote = votes.find(function(v) { return parseInt(v.time_slot) === h; }); %>
+            <% var count = vote ? parseInt(vote.vote_count) : 0; %>
+            <% var level = count === 0 ? 0 : count <= 1 ? 1 : count <= 2 ? 2 : count <= 3 ? 3 : count <= 4 ? 4 : 5; %>
+            <div class="heatmap-cell hm-<%= level %>" title="<%= h %>:00 — <%= count %> vote(s)">
+              <span class="hm-time"><%= String(h).padStart(2, '0') %>:00</span>
+              <span class="hm-count"><%= count %></span>
+            </div>
+          <% } %>
+        </div>
+
+        <div class="period-label-hm">🌆 Evening (18–23)</div>
+        <div class="heatmap">
+          <% for (var h = 18; h < 24; h++) { %>
+            <% var vote = votes.find(function(v) { return parseInt(v.time_slot) === h; }); %>
+            <% var count = vote ? parseInt(vote.vote_count) : 0; %>
+            <% var level = count === 0 ? 0 : count <= 1 ? 1 : count <= 2 ? 2 : count <= 3 ? 3 : count <= 4 ? 4 : 5; %>
+            <div class="heatmap-cell hm-<%= level %>" title="<%= h %>:00 — <%= count %> vote(s)">
+              <span class="hm-time"><%= String(h).padStart(2, '0') %>:00</span>
+              <span class="hm-count"><%= count %></span>
+            </div>
+          <% } %>
+        </div>
+
+        <!-- Legend -->
+        <div class="heatmap-legend">
+          <span>0</span>
+          <div class="heatmap-legend-cell hm-0"></div>
+          <div class="heatmap-legend-cell hm-1"></div>
+          <div class="heatmap-legend-cell hm-2"></div>
+          <div class="heatmap-legend-cell hm-3"></div>
+          <div class="heatmap-legend-cell hm-4"></div>
+          <div class="heatmap-legend-cell hm-5"></div>
+          <span>5+</span>
+          <span style="margin-left:8px;">votes per slot</span>
+        </div>
+      </div>
+
+      <!-- Detailed results -->
+      <div class="card">
+        <h2>📋 Detailed Results</h2>
+        <div class="results">
+          <% var maxVotes = votes.length > 0 ? parseInt(votes[0].vote_count) : 1; %>
+          <% votes.forEach(function(vote) { %>
+            <div class="result-item">
+              <span style="min-width: 50px;"><%= vote.time_slot %>:00</span>
+              <div class="bar-container">
+                <div class="bar" style="width: <%= (parseInt(vote.vote_count) / maxVotes) * 100 %>%"></div>
+              </div>
+              <span style="min-width: 80px; text-align: right;"><%= vote.vote_count %> vote(s)</span>
+            </div>
+            <% if (namesBySlot[vote.time_slot]) { %>
+              <div style="padding: 6px 12px 6px 62px; font-size: 13px; color: var(--text-secondary);">
+                👤 <%= namesBySlot[vote.time_slot].join(', ') %>
+              </div>
+            <% } %>
+          <% }); %>
+        </div>
+        <button class="copy-results-btn" onclick="copyResults()">📋 Copy Results</button>
+        <button class="csv-btn" onclick="exportCSV()">📊 Export CSV</button>
+      </div>
+    <% } else { %>
+      <div class="card">
+        <div class="no-votes">
+          <h2>No votes yet</h2>
+          <p>Share the link with participants</p>
+        </div>
+      </div>
+    <% } %>
+
+    <!-- Discussion -->
+    <div class="card">
+      <h2>💬 Discussion</h2>
+
+      <% if (comments.length > 0) { %>
+        <div style="margin-bottom: 20px; max-height: 300px; overflow-y: auto;">
+          <% comments.forEach(function(c) { %>
+            <div style="padding: 12px; border-bottom: 1px solid var(--border);">
+              <div style="font-weight: 600; color: var(--primary); font-size: 14px;">
+                👤 <%= c.author_name %>
+                <span style="color: var(--text-muted); font-weight: 400; font-size: 12px; margin-left: 8px;">
+                  <%= new Date(c.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) %>
+                </span>
+              </div>
+              <p style="margin: 6px 0 0; color: var(--text-secondary); line-height: 1.5; white-space: pre-wrap;"><%= c.body %></p>
+            </div>
+          <% }); %>
+        </div>
+      <% } else { %>
+        <p style="color: var(--text-muted); text-align: center; padding: 20px;">No comments yet. Be the first!</p>
+      <% } %>
+
+      <form method="POST" action="/comment/<%= meeting.unique_id %>" style="margin-top: 16px;" onsubmit="showToast('Comment posted!')">
+        <input type="text" name="authorName" required placeholder="Your name" style="width: 100%; padding: 10px 14px; border: 2px solid var(--border-input); border-radius: 8px; font-size: 14px; background: var(--bg-input); color: var(--text); margin-bottom: 8px;">
+        <textarea name="body" required rows="3" placeholder="Write a comment..." style="width: 100%; padding: 10px 14px; border: 2px solid var(--border-input); border-radius: 8px; font-size: 14px; background: var(--bg-input); color: var(--text); resize: vertical; font-family: inherit;"></textarea>
+        <button type="submit" class="submit-btn" style="margin-top: 8px; font-size: 14px; padding: 10px;">Post Comment</button>
+      </form>
+    </div>
+
+    <!-- Actions -->
+    <div class="action-links">
+      <a href="/">← Home</a>
+      <a href="/vote/<%= meeting.unique_id %>" class="primary">Vote again →</a>
+    </div>
+    <div class="action-links">
+      <a href="/create" class="primary">＋ Create new meeting</a>
+    </div>
+    <div class="action-links">
+      <form method="POST" action="/delete/<%= meeting.unique_id %>" style="flex:1" onsubmit="return confirm('Delete this meeting?')">
+        <button type="submit" class="delete-btn">🗑️ Delete meeting</button>
+      </form>
+    </div>
+  </div>
+
+  <script src="/theme.js"></script>
+  <script>
+    function copyResults() {
+      var text = '📊 Results: <%= meeting.title %>\n📅 <%= meeting.dateDisplay %>\n🕐 Timezone: <%= meeting.timezone %>\n\n';
+      <% votes.forEach(function(vote) { %>
+        text += '<%= vote.time_slot %>:00 — <%= vote.vote_count %> vote(s)';
+        <% if (namesBySlot[vote.time_slot]) { %>
+          text += ' (<%= namesBySlot[vote.time_slot].join(", ") %>)';
+        <% } %>
+        text += '\n';
+      <% }); %>
+      <% if (bestSlot) { %> text += '\n🏆 Best time: <%= bestSlot.time_slot %>:00 (<%= meeting.timezone %>, UTC<%= tzOffset(meeting.timezone) %>)'; <% } %>
+      navigator.clipboard.writeText(text).then(function() { showToast('Results copied!'); });
+    }
+    function exportCSV() {
+      var csv = 'Time Slot,Votes,Participants\n';
+      <% votes.forEach(function(vote) { %>
+        csv += '<%= vote.time_slot %>:00,<%= vote.vote_count %>,"<%= namesBySlot[vote.time_slot] ? namesBySlot[vote.time_slot].join("; ") : "" %>"\n';
+      <% }); %>
+      <% if (bestSlot) { %> csv += '\n"Best Time:","<%= bestSlot.time_slot %>:00 (<%= meeting.timezone %>, UTC<%= tzOffset(meeting.timezone) %>)"\n'; <% } %>
+      var blob = new Blob([csv], { type: 'text/csv' });
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.href = url;
+      a.download = '<%= meeting.title.replace(/\s+/g, "_") %>_results.csv';
+      a.click();
+      URL.revokeObjectURL(url);
+      showToast('CSV exported!');
+    }
+    <% if (bestSlot && parseInt(bestSlot.vote_count) >= 2) { %>
+      (function() {
+        var colors = ['#4CAF50','#66BB6A','#81C784','#FFD54F','#42A5F5','#AB47BC'];
+        for (var i = 0; i < 40; i++) {
+          (function(i) {
+            setTimeout(function() {
+              var c = document.createElement('div');
+              c.className = 'confetti';
+              c.style.left = Math.random() * 100 + 'vw';
+              c.style.background = colors[Math.floor(Math.random() * colors.length)];
+              c.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+              c.style.width = (Math.random() * 8 + 6) + 'px';
+              c.style.height = (Math.random() * 8 + 6) + 'px';
+              c.style.animationDuration = (Math.random() * 2 + 2) + 's';
+              document.body.appendChild(c);
+              setTimeout(function() { c.remove(); }, 4000);
+            }, i * 50);
+          })(i);
+        }
+      })();
+    <% } %>
+  </script>
+</body>
+</html>
