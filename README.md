@@ -2,10 +2,6 @@
 
 A web application for finding the best meeting time based on participant availability.
 
-## Demo
-
-![Main Page](screenshots/main.png)
-
 ## Context
 
 **End users:** Student teams, work groups, friends
