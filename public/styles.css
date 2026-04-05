@@ -57,7 +57,7 @@
 
 /* ─── Global ──────────────────────────────────────────── */
 * { box-sizing: border-box; margin: 0; padding: 0; }
-
+html { background: var(--bg); }
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
   background: var(--bg);
