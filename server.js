@@ -401,12 +401,36 @@ app.post('/delete/:id', async (req, res, next) => {
     const meeting = await findMeeting(req.params.id);
     if (!meeting) return res.status(404).render('error', { message: 'Meeting not found' });
 
-    if (meeting.password && !isPasswordVerified(req.session, meeting.id)) {
-      return res.render('password', { meeting, redirectUrl: `/delete/${meeting.unique_id}` });
+    // For password-protected meetings, always require re-confirmation via redirect
+    // unless they came from the password page (indicated by session flag)
+    const deleteConfirmed = req.session._deleteConfirmed === meeting.id;
+    if (meeting.password && !deleteConfirmed) {
+      req.session._pendingDelete = meeting.id;
+      return res.render('password', { meeting, redirectUrl: `/delete-confirm/${meeting.unique_id}` });
     }
 
     await pool.query('DELETE FROM meetings WHERE id = $1', [meeting.id]);
+    // Clean up
+    delete req.session._pendingDelete;
+    delete req.session._deleteConfirmed;
     res.redirect('/meetings');
+  } catch (err) {
+    next(err);
+  }
+});
+
+// Delete confirmation after password check
+app.get('/delete-confirm/:id', async (req, res, next) => {
+  try {
+    const meeting = await findMeeting(req.params.id);
+    if (!meeting) return res.status(404).render('error', { message: 'Meeting not found' });
+
+    if (req.session._pendingDelete !== meeting.id) {
+      return res.status(403).render('error', { message: 'Delete session expired' });
+    }
+
+    req.session._deleteConfirmed = meeting.id;
+    return res.redirect(`/delete/${meeting.unique_id}`);
   } catch (err) {
     next(err);
   }
