@@ -4,19 +4,9 @@
     var p = window.matchMedia('(prefers-color-scheme: dark)').matches;
     var t = s || (p ? 'dark' : 'light');
     document.documentElement.setAttribute('data-theme', t);
-    // Apply critical CSS vars immediately so body background resolves before styles.css loads
-    if (t === 'dark') {
-      document.documentElement.style.setProperty('--bg', '#1a1a2e');
-      document.documentElement.style.setProperty('--bg-card', '#16213e');
-      document.documentElement.style.setProperty('--text', '#e0e0e0');
-    } else {
-      document.documentElement.style.setProperty('--bg', '#f0f2f5');
-      document.documentElement.style.setProperty('--bg-card', '#ffffff');
-      document.documentElement.style.setProperty('--text', '#333333');
-    }
   })();
 </script>
 <style>
-  html, body { background: var(--bg, #f0f2f5) !important; color: var(--text, #333333); margin: 0; }
+  html, body { background: #f0f2f5 !important; margin: 0; }
   [data-theme="dark"] html, [data-theme="dark"] body { background: #1a1a2e !important; }
 </style>

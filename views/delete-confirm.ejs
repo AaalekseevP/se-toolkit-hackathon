@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Delete Meeting</title>
+  <title>Delete — <%= meeting.title %></title>
   <%- include('partials/theme-init') %>
   <link rel="stylesheet" href="/styles.css">
 </head>
@@ -11,19 +11,47 @@
   <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme"></button>
 
   <div class="header">
-    <h1>🗑️ Delete Meeting</h1>
-  </div>
-  <div class="container">
-    <div class="card" style="text-align:center;">
-      <h2>Delete "<%= meeting.title %>"?</h2>
-      <p style="color:var(--text-muted);margin:16px 0;">This action cannot be undone. All votes and comments will be removed.</p>
-      <form method="POST" action="/delete/<%= meeting.unique_id %>" style="display:flex;gap:10px;justify-content:center;margin-top:20px;">
-        <a href="/result/<%= meeting.unique_id %>" class="btn btn-outline" style="flex:1;">Cancel</a>
-        <button type="submit" class="delete-btn" style="flex:1;">Yes, delete</button>
-      </form>
+    <h1 class="meeting-title-h1"><%= meeting.title %></h1>
+    <p class="subtitle">🗑️ Delete this meeting</p>
+    <div class="nav">
+      <a href="/">Home</a>
+      <a href="/result/<%= meeting.unique_id %>">Back to Results</a>
     </div>
-    <div style="text-align:center;margin-top:16px;">
-      <a href="/meetings" style="color:var(--primary);text-decoration:none;font-weight:600;">← Back to all meetings</a>
+  </div>
+
+  <div class="container">
+    <% if (!isVerified) { %>
+      <!-- Password required -->
+      <div class="card" style="text-align:center;">
+        <h2>🔒 Password Required</h2>
+        <p style="color:var(--text-muted);margin:12px 0 20px;">This meeting is protected. Enter the password to delete it.</p>
+        <form method="POST" action="/check-password/<%= meeting.unique_id %>" style="max-width:400px;margin:0 auto;">
+          <input type="hidden" name="redirectUrl" value="/delete/<%= meeting.unique_id %>">
+          <label class="field-label" for="password">Password:</label>
+          <input type="password" id="password" name="password" required placeholder="Enter password" autofocus style="margin-bottom:16px;">
+          <button type="submit" class="submit-btn">Verify</button>
+        </form>
+      </div>
+    <% } else { %>
+      <!-- Delete confirmation -->
+      <div class="card" style="text-align:center;border:2px solid #f44336;">
+        <div style="font-size:48px;margin-bottom:12px;">⚠️</div>
+        <h2 style="color:#f44336;margin-bottom:8px;">Delete this meeting?</h2>
+        <p style="color:var(--text-muted);margin:0 0 24px;font-size:15px;line-height:1.5;">
+          This action cannot be undone.<br>
+          All votes and comments will be permanently removed.
+        </p>
+        <div style="display:flex;gap:12px;max-width:400px;margin:0 auto;">
+          <a href="/result/<%= meeting.unique_id %>" class="btn btn-outline" style="flex:1;text-align:center;">Cancel</a>
+          <form method="POST" action="/delete/<%= meeting.unique_id %>" style="flex:1;">
+            <button type="submit" class="delete-btn" style="width:100%;height:48px;font-size:16px;border-radius:8px;">Delete</button>
+          </form>
+        </div>
+      </div>
+    <% } %>
+
+    <div style="text-align:center;margin-top:24px;">
+      <a href="/meetings" style="color:var(--primary);text-decoration:none;font-weight:600;">← All Meetings</a>
     </div>
   </div>
 
