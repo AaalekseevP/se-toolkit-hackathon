@@ -113,12 +113,13 @@ body {
 }
 
 @media (max-width: 600px) {
-  .header { padding-top: 16px; }
   .author-badge {
-    position: static;
-    font-size: 12px;
-    opacity: 0.7;
-    margin-bottom: 4px;
+    top: 8px;
+    left: auto;
+    right: 60px;
+    font-size: 10px;
+    opacity: 0.6;
+    line-height: 1.2;
   }
   .header h1.meeting-title-h1 { font-size: 22px; }
 }
