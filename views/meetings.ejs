@@ -55,9 +55,15 @@
                   </div>
                 </div>
               <% } %>
-              <form method="POST" action="/delete/<%= m.unique_id %>" style="display:inline" onsubmit="return confirm('Delete this meeting?')">
-                <button type="submit" style="background:none;border:none;color:#f44336;cursor:pointer;font-size:18px;" title="Delete">🗑️</button>
-              </form>
+              <div id="deleteMeet_<%= m.unique_id %>" style="display:inline-flex;align-items:center;gap:4px;">
+                <button type="button" style="background:none;border:none;color:#f44336;cursor:pointer;font-size:18px;" onclick="document.getElementById('deleteMeet_<%= m.unique_id %>').querySelector('.confirm-delete').style.display='inline-flex';this.style.display='none';" title="Delete">🗑️</button>
+                <div class="confirm-delete" style="display:none;align-items:center;gap:4px;">
+                  <form method="POST" action="/delete/<%= m.unique_id %>" style="display:inline;">
+                    <button type="submit" style="background:#f44336;color:white;border:none;border-radius:4px;padding:4px 8px;font-size:11px;cursor:pointer;font-weight:600;">✓</button>
+                  </form>
+                  <button type="button" style="background:none;border:1px solid var(--border);color:var(--text-muted);border-radius:4px;padding:4px 8px;font-size:11px;cursor:pointer;" onclick="document.getElementById('deleteMeet_<%= m.unique_id %>').querySelector('.confirm-delete').style.display='none';this.previousElementSibling.style.display='inline-block';">✕</button>
+                </div>
+              </div>
             </div>
           </div>
         <% }); %>

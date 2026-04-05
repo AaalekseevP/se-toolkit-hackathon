@@ -401,6 +401,10 @@ app.post('/delete/:id', async (req, res, next) => {
     const meeting = await findMeeting(req.params.id);
     if (!meeting) return res.status(404).render('error', { message: 'Meeting not found' });
 
+    if (meeting.password && !isPasswordVerified(req.session, meeting.id)) {
+      return res.render('password', { meeting, redirectUrl: `/delete/${meeting.unique_id}` });
+    }
+
     await pool.query('DELETE FROM meetings WHERE id = $1', [meeting.id]);
     res.redirect('/meetings');
   } catch (err) {
