@@ -25,12 +25,12 @@ A web application for finding the best meeting time based on participant availab
 - ✅ Confetti animation when a clear winner emerges
 - ✅ Dark/light theme toggle (no flicker)
 - ✅ Docker deployment
-- ✅ **Close voting** — inline confirmation, blocks new votes
-- ✅ **Voting status badges** (Open / Closed) on all pages
-- ✅ **UTC offset display** on winning time and exports
-- ✅ **Timezone selector** with UTC offsets and popular cities (UTC+0 → UTC+12)
-- ✅ **Discussion** — threaded comments on result pages
-- ✅ **AI-powered summary** of voting results
+- ✅ Close voting — inline confirmation, blocks new votes
+- ✅ Voting status badges (Open / Closed) on all pages
+- ✅ UTC offset display on winning time and exports
+- ✅ Timezone selector with UTC offsets and popular cities (UTC+0 → UTC+12)
+- ✅ Discussion — threaded comments on result pages
+- ✅ AI-powered summary of voting results
 
 ### Not yet implemented
 - Email notifications / reminders
