@@ -105,7 +105,3 @@ docker-compose up -d
 ## License
 
 MIT
-
----
-
-By Roman Alekseev, Innopolis University
