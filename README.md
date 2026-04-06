@@ -101,7 +101,3 @@ docker-compose up -d
 ├── docker-compose.yml
 └── package.json
 ```
-
-## License
-
-MIT
