@@ -136,9 +136,13 @@
   <script>
     function copyLink() {
       const input = document.getElementById('shareLink');
-      input.select();
-      navigator.clipboard.writeText(input.value);
-      showToast('Link copied!');
+      navigator.clipboard.writeText(input.value).then(function() {
+        showToast('Link copied!');
+      }).catch(function() {
+        input.select();
+        document.execCommand('copy');
+        showToast('Link copied!');
+      });
     }
 
     function updateCount() {
