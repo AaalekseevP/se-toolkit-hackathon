@@ -2,6 +2,24 @@
 
 A web application for finding the best meeting time based on participant availability.
 
+## Demo
+
+![Home Page](assets/home-page.png)
+
+![Create Meeting](assets/create-meeting.png)
+
+![Voting](assets/voting-1.png)
+
+![Voting](assets/voting-2.png)
+
+![Results](assets/results-1.png)
+
+![Results](assets/results-2.png)
+
+![Results](assets/results-3.png)
+
+![Results](assets/results-4.png)
+
 ## Context
 
 **End users:** Student teams, work groups, friends
