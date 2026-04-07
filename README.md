@@ -57,14 +57,6 @@ A web application for finding the best meeting time based on participant availab
 
 ## Usage
 
-### Quick start (Docker — recommended)
-
-```bash
-docker-compose up -d
-```
-
-Open http://localhost:3000
-
 ### How to use the app
 
 1. **Create a meeting** — click "Create Meeting", enter a title, pick a date, choose your timezone, and optionally set a password.
