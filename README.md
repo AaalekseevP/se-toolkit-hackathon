@@ -57,7 +57,28 @@ A web application for finding the best meeting time based on participant availab
 
 ## Usage
 
+### Quick start (Docker — recommended)
+
+```bash
+docker-compose up -d
+```
+
+Open http://localhost:3000
+
+### How to use the app
+
+1. **Create a meeting** — click "Create Meeting", enter a title, pick a date, choose your timezone, and optionally set a password.
+2. **Share the link** — after creating the meeting you'll get a unique voting URL (and a QR code). Send it to participants.
+3. **Vote** — each participant opens the link, enters their name, and clicks the time slots they're available (24-hour grid).
+4. **See results** — after voting the app automatically picks the best time, shows a heatmap, voter names, stats, and an AI-powered summary. You can also leave threaded comments.
+5. **Close voting** — when enough people have voted, click "Close Voting" to stop new submissions.
+6. **Export** — copy results to clipboard or download as CSV.
+
 ### Local setup (requires PostgreSQL)
+
+1. Make sure PostgreSQL is running and create a database named `meeting_scheduler`.
+2. Set environment variables if your credentials differ from the defaults (see table below).
+3. Install dependencies and start the server:
 
 ```bash
 npm install
@@ -100,22 +121,24 @@ docker-compose up -d
 ## Project structure
 
 ```
-├── server.js              # Express server + all routes
-├── db.js                  # PostgreSQL connection
-├── views/                 # EJS templates
-│   ├── index.ejs          # Home page
-│   ├── create.ejs         # Create meeting form
-│   ├── vote.ejs           # Voting page
-│   ├── result.ejs         # Results page
-│   ├── meetings.ejs       # All meetings list
-│   ├── password.ejs       # Password prompt
-│   ├── error.ejs          # Error page
+├── server.js                  # Express server, all routes, AI summary logic
+├── db.js                      # PostgreSQL pool & init
+├── views/
+│   ├── index.ejs              # Home — list of recent meetings
+│   ├── create.ejs             # Create-meeting form
+│   ├── vote.ejs               # Voting page (24-hour grid + QR code)
+│   ├── result.ejs             # Results (heatmap, stats, AI summary, comments)
+│   ├── meetings.ejs           # Full meetings list
+│   ├── password.ejs           # Password prompt
+│   ├── delete-confirm.ejs     # Delete-meeting confirmation
+│   ├── error.ejs              # Error page
 │   └── partials/
-│       └── theme-init.ejs # Flicker-free dark mode
+│       └── theme-init.ejs     # Flicker-free dark/light theme init
 ├── public/
-│   ├── styles.css          # Global styles (dark/light theme)
-│   └── theme.js            # Theme toggle logic
-├── Dockerfile
-├── docker-compose.yml
-└── package.json
+│   ├── styles.css              # Global styles + dark/light theme
+│   └── theme.js                # Client-side theme toggle
+├── docker-compose.yml           # App + PostgreSQL services
+├── Dockerfile                   # Node 20 slim image
+├── package.json
+└── README.md
 ```
